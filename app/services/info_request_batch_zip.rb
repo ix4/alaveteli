@@ -4,6 +4,7 @@
 #
 class InfoRequestBatchZip
   include DownloadHelper
+  include Enumerable
 
   ZippableFile = Struct.new(:path, :body)
 
@@ -14,18 +15,7 @@ class InfoRequestBatchZip
   end
 
   def files
-    files = [prepare_dashboard_metrics]
-
-    info_request_events.each_with_object(files) do |event, memo|
-      if event.outgoing?
-        memo << perpare_outgoing_message(event.outgoing_message)
-      elsif event.response?
-        memo << perpare_incoming_message(event.incoming_message)
-        event.incoming_message.foi_attachments.each do |attachment|
-          memo << perpare_foi_attachment(attachment)
-        end
-      end
-    end
+    to_a
   end
 
   def name
@@ -42,13 +32,31 @@ class InfoRequestBatchZip
     block_writer = ZipTricks::BlockWrite.new(&chunks)
 
     ZipTricks::Streamer.open(block_writer) do |zip|
-      files.each do |file|
+      each do |file|
         zip.write_deflated_file(file.path) { |writer| writer << file.body }
       end
     end
   end
 
   private
+
+  def each(&block)
+    to_enum(:each) unless block_given?
+
+    yield prepare_dashboard_metrics
+
+    info_request_events.each do |event|
+      if event.outgoing?
+        yield perpare_outgoing_message(event.outgoing_message)
+      elsif event.response?
+        yield perpare_incoming_message(event.incoming_message)
+
+        event.incoming_message.foi_attachments.each do |attachment|
+          yield perpare_foi_attachment(attachment)
+        end
+      end
+    end
+  end
 
   def info_request_events
     InfoRequestEvent.where(info_request: info_request_batch.info_requests).
