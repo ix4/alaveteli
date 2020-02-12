@@ -2,6 +2,6 @@
 # the Money gem to format currencies
 Money.locale_backend = :currency
 
-# Use the new defau8lt round mode to get rid of deprecation warnings- this can
+# Use the new default round mode to get rid of deprecation warnings - this can
 # be remove when upgrading the next major release of the Money gem
 Money.rounding_mode = BigDecimal::ROUND_HALF_UP
