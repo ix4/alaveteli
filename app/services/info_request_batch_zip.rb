@@ -47,12 +47,12 @@ class InfoRequestBatchZip
 
     info_request_events.each do |event|
       if event.outgoing?
-        yield perpare_outgoing_message(event.outgoing_message)
+        yield prepare_outgoing_message(event.outgoing_message)
       elsif event.response?
-        yield perpare_incoming_message(event.incoming_message)
+        yield prepare_incoming_message(event.incoming_message)
 
         event.incoming_message.foi_attachments.each do |attachment|
-          yield perpare_foi_attachment(attachment)
+          yield prepare_foi_attachment(attachment)
         end
       end
     end
@@ -70,7 +70,7 @@ class InfoRequestBatchZip
     ZippableFile.new(metrics.name, metrics.to_csv)
   end
 
-  def perpare_outgoing_message(message)
+  def prepare_outgoing_message(message)
     sent_at = message.last_sent_at.to_formatted_s(:filename)
     name = "outgoing_#{message.id}.txt"
     path = [base_path(message.info_request), sent_at, name].join('/')
@@ -78,7 +78,7 @@ class InfoRequestBatchZip
     ZippableFile.new(path, message.body)
   end
 
-  def perpare_incoming_message(message)
+  def prepare_incoming_message(message)
     sent_at = message.sent_at.to_formatted_s(:filename)
     name = "incoming_#{message.id}.txt"
     path = [base_path(message.info_request), sent_at, name].join('/')
@@ -86,7 +86,7 @@ class InfoRequestBatchZip
     ZippableFile.new(path, message.get_main_body_text_unfolded)
   end
 
-  def perpare_foi_attachment(attachment)
+  def prepare_foi_attachment(attachment)
     message = attachment.incoming_message
     sent_at = message.sent_at.to_formatted_s(:filename)
 
