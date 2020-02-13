@@ -4,7 +4,6 @@
 #
 class AlaveteliPro::BatchDownloadsController < AlaveteliPro::BaseController
   include ActionController::Live
-  include ZipTricks::RailsStreaming
 
   def show
     authorize! :download, info_request_batch
