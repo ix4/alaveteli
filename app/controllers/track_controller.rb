@@ -1,4 +1,3 @@
-# -*- encoding : utf-8 -*-
 # app/controllers/track_controller.rb:
 # Publically visible email alerts and RSS - think an alert system crossed with
 # social bookmarking.
@@ -167,7 +166,10 @@ class TrackController < ApplicationController
   end
 
   def atom_feed_internal
-    @xapian_object = perform_search([InfoRequestEvent], @track_thing.track_query, @track_thing.params[:feed_sortby], nil, 25, 1)
+    @xapian_object = perform_search(
+      [InfoRequestEvent], @track_thing.track_query,
+      @track_thing.params[:feed_sortby], nil, 25
+    )
     # We're assuming that a request to a feed url with no format suffix wants atom/xml
     # so set that as the default, regardless of content negotiation
     request.format = params[:format] || 'xml'

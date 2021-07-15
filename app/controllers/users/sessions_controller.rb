@@ -1,4 +1,3 @@
-# -*- encoding : utf-8 -*-
 class Users::SessionsController < UserController
   include UserSpamCheck
 
@@ -59,6 +58,9 @@ class Users::SessionsController < UserController
         send_confirmation_mail @user_signin
       end
     end
+  rescue ActionController::ParameterMissing
+    flash[:error] = _('Invalid form submission')
+    render template: 'user/sign'
   end
 
   def destroy

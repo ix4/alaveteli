@@ -1,7 +1,6 @@
-# -*- encoding : utf-8 -*-
-require File.expand_path(File.join('..', '..', '..', 'spec_helper'), __FILE__)
+require 'spec_helper'
 
-describe "request/show" do
+RSpec.describe "request/show" do
 
   let(:mock_body) { FactoryBot.create(:public_body, :name => "test body") }
 
@@ -234,6 +233,18 @@ describe "request/show" do
 
     end
 
+  end
+
+  describe 'when the request is restricted to new authority responses' do
+    it 'displays to say that the request is restricted to authority correspondence' do
+      mock_request.update_attribute(:allow_new_responses_from, 'authority_only')
+      request_page
+      expect(rendered).
+        to have_content('Automatic anti-spam measures are in place for this ' \
+                        'older request. Please let us know if a further ' \
+                        'response is expected or if you are having trouble ' \
+                        'responding.')
+    end
   end
 
   describe 'when the request is closed to new authority responses' do

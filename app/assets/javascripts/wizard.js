@@ -8,6 +8,7 @@
       questionClass: "wizard__question",
       questionAnswerableClass: "wizard__question--answerable",
       questionAnsweredClass: "wizard__question--answered",
+      questionOptionClass: "wizard__question__option",
 
       suggestionClass: "wizard__suggestion",
       suggestionSuggestedClass: "wizard__suggestion--suggested",
@@ -30,6 +31,8 @@
 
   RefusalWizard.prototype._init = function(target) {
     var wizard = this;
+
+    wizard.$form = wizard.$el.find('form');
 
     wizard.$blocks = wizard.$el.find(
       "." +
@@ -90,6 +93,8 @@
     wizard.$questions.on("change", function() {
       wizard._update($(this));
     });
+
+    wizard._checkIdentifiedRefusals();
   };
 
   RefusalWizard.prototype._setupNextSteps = function() {
@@ -108,8 +113,10 @@
   };
 
   RefusalWizard.prototype._valuesOf = function(question) {
+    var wizard = this;
+
     return $(question)
-      .find("input:checked, option:selected")
+      .find("input." + wizard.options.questionOptionClass + ":checked")
       .map(function() {
         return $(this).val();
       })
@@ -124,8 +131,7 @@
       var showIfArray = $block.data("show-if");
 
       // can't be a dependent if already answered
-      // FIXME: this assumes suggestions won't have input/option elements
-      if ($block.find("input:checked, option:selected").length) {
+      if ($block.find("input." + wizard.options.questionOptionClass + ":checked").length) {
         return false;
       }
 
@@ -212,7 +218,7 @@
 
     if ($next_question) {
       $next_question.addClass(wizard.options.questionAnswerableClass);
-      $next_question.find("input[value=yes]").focus();
+      $next_question.find("input." + wizard.options.questionOptionClass + "[value=yes]").focus();
     }
 
     if ($current_question && $next_question) {
@@ -247,9 +253,21 @@
     $question.removeClass(wizard.options.questionAnswerableClass);
     $question.removeClass(wizard.options.questionAnsweredClass);
 
-    var $options = $question.find("input, option");
+    var $options = $question.find("input." + wizard.options.questionOptionClass);
     $options.prop("checked", false);
-    $options.prop("selected", false);
+  };
+
+  RefusalWizard.prototype._checkIdentifiedRefusals = function() {
+    var wizard = this;
+    var refusalsArray = wizard.$form.data('refusals');
+    if (!refusalsArray) return;
+
+    var $inputs = wizard.$questions.find("input." + wizard.options.questionOptionClass);
+
+    for (var i = 0, len = refusalsArray.length; i < len; i++) {
+      var refusal = refusalsArray[i];
+      $inputs.filter("[value='" + refusal + "']").click();
+    }
   };
 
   RefusalWizard.prototype.log = function() {
@@ -294,4 +312,49 @@
   };
 
   $(".js-wizard").refusalWizard({ debug: false });
+
+
+  // Hide/reveal on long list of exemption checkboxes
+
+  function shouldHideCheckboxes () {
+    var checkboxCount = $('[data-block="exemption"] input[type="checkbox"]').length;
+
+    // 4 seems about right for small and large screens
+    if(checkboxCount >= 4 ) {
+      return true;
+    }
+  }
+
+  function expandFieldset() {
+    // fetch translated strings from the HTML
+    var textExpand = $('.wizard').data('expand-button-text-expand');
+    var textShrink = $('.wizard').data('expand-button-text-shrink');
+
+    // Hide the long list now we're sure we've got JS
+    $('[data-block="exemption"]').toggleClass('expanded');
+
+    if ($('.maximise-questions').text() == textExpand ) {
+      $('.maximise-questions').html(textShrink);
+    } else {
+      $('.maximise-questions').html(textExpand);
+    }
+  }
+
+
+  if(shouldHideCheckboxes()) {
+
+    $('[data-block="exemption"] fieldset').after("<button class='button-secondary maximise-questions'>" + $('.wizard').data('expand-button-text-expand') + "</button>");
+
+    //if a checkbox is pre-selected, expand the list
+    if ($('[data-block="exemption"] input[type="checkbox"]').is(":checked")) {
+      expandFieldset();
+    }
+  }
+
+  $('.maximise-questions').click(function(e){
+    e.preventDefault();
+    expandFieldset();
+  });
+
+
 })(window.jQuery);

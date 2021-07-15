@@ -1,7 +1,6 @@
-# -*- encoding : utf-8 -*-
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require 'spec_helper'
 
-describe "quietly_try_to_open" do
+RSpec.describe "quietly_try_to_open" do
 
   let(:controller) { double(ApplicationController) }
   let(:empty_stream) { double(URI::HTTP) }

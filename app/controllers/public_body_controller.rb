@@ -1,4 +1,3 @@
-# -*- encoding : utf-8 -*-
 # app/controllers/public_body_controller.rb:
 # Show information about a public body.
 #
@@ -117,9 +116,7 @@ class PublicBodyController < ApplicationController
     long_cache
 
     @tag = params[:tag] || 'all'
-    if @tag.scan(/./mu).size == 1
-      @tag = RUBY_VERSION < '2.4' ? Unicode.upcase(@tag) : @tag.upcase
-    end
+    @tag = @tag.upcase if @tag.scan(/./mu).size == 1
 
     @country_code = AlaveteliConfiguration.iso_country_code
     @locale = AlaveteliLocalization.locale

@@ -1,4 +1,3 @@
-# -*- encoding : utf-8 -*-
 # app/controllers/user_controller.rb:
 # Show information about a user.
 #
@@ -168,6 +167,9 @@ class UserController < ApplicationController
         return
       end
     end
+  rescue ActionController::ParameterMissing
+    flash[:error] = _('Invalid form submission')
+    render action: :sign
   end
 
   def ip_rate_limiter

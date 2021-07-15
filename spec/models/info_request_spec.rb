@@ -1,5 +1,5 @@
-# -*- encoding : utf-8 -*-
 # == Schema Information
+# Schema version: 20210114161442
 #
 # Table name: info_requests
 #
@@ -10,7 +10,7 @@
 #  created_at                            :datetime         not null
 #  updated_at                            :datetime         not null
 #  described_state                       :string           not null
-#  awaiting_description                  :boolean          default(FALSE), not null
+#  awaiting_description                  :boolean          default("false"), not null
 #  prominence                            :string           default("normal"), not null
 #  url_title                             :text             not null
 #  law_used                              :string           default("foi"), not null
@@ -19,24 +19,62 @@
 #  idhash                                :string           not null
 #  external_user_name                    :string
 #  external_url                          :string
-#  attention_requested                   :boolean          default(FALSE)
-#  comments_allowed                      :boolean          default(TRUE), not null
+#  attention_requested                   :boolean          default("false")
+#  comments_allowed                      :boolean          default("true"), not null
 #  info_request_batch_id                 :integer
 #  last_public_response_at               :datetime
-#  reject_incoming_at_mta                :boolean          default(FALSE), not null
-#  rejected_incoming_count               :integer          default(0)
+#  reject_incoming_at_mta                :boolean          default("false"), not null
+#  rejected_incoming_count               :integer          default("0")
 #  date_initial_request_last_sent_at     :date
 #  date_response_required_by             :date
 #  date_very_overdue_after               :date
 #  last_event_forming_initial_request_id :integer
 #  use_notifications                     :boolean
 #  last_event_time                       :datetime
-#  incoming_messages_count               :integer          default(0)
+#  incoming_messages_count               :integer          default("0")
 #
 
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require 'spec_helper'
+require 'models/concerns/info_request/title_validation'
 
-describe InfoRequest do
+RSpec.describe InfoRequest do
+  it_behaves_like 'concerns/info_request/title_validation',
+                  FactoryBot.build(:info_request)
+
+  describe '.internal' do
+    subject { described_class.internal }
+
+    let!(:internal) do
+      FactoryBot.create(:info_request)
+    end
+
+    let!(:external) do
+      FactoryBot.create(:info_request, :external)
+    end
+
+    it 'can scope to internal info requests' do
+      is_expected.to include(internal)
+      is_expected.to_not include(external)
+    end
+  end
+
+  describe '.external' do
+    subject { described_class.external }
+
+    let!(:internal) do
+      FactoryBot.create(:info_request)
+    end
+
+    let!(:external) do
+      FactoryBot.create(:info_request, :external)
+    end
+
+    it 'can scope to external info requests' do
+      is_expected.to_not include(internal)
+      is_expected.to include(external)
+    end
+  end
+
   describe '#foi_attachments' do
     subject { info_request.foi_attachments }
 
@@ -1612,95 +1650,6 @@ describe InfoRequest do
   end
 
   describe 'when validating' do
-
-    it 'requires a summary' do
-      info_request = InfoRequest.new
-      info_request.valid?
-      expect(info_request.errors[:title]).
-        to include("Please enter a summary of your request")
-    end
-
-    it 'accepts a summary with ascii characters' do
-      info_request = InfoRequest.new(:title => 'Abcde')
-      info_request.valid?
-      expect(info_request.errors[:title]).to be_empty
-    end
-
-    it 'accepts a summary with unicode characters' do
-      info_request = InfoRequest.new(:title => 'Кажете')
-      info_request.valid?
-      expect(info_request.errors[:title]).to be_empty
-    end
-
-    it 'rejects a summary with no ascii or unicode characters' do
-      info_request = InfoRequest.new(:title => '55555')
-      info_request.valid?
-      expect(info_request.errors[:title]).
-        to include("Please write a summary with some text in it")
-    end
-
-    it 'accepts a summary of numbers and lower case' do
-      info_request = InfoRequest.new(:title => '999 calls')
-      info_request.valid?
-      expect(info_request.errors[:title]).to be_empty
-    end
-
-    it 'accepts all upper case single words' do
-      info_request = InfoRequest.new(:title => 'HMRC')
-      info_request.valid?
-      expect(info_request.errors[:title]).to be_empty
-    end
-
-    it 'rejects a summary which is more than 200 chars long' do
-      info_request = InfoRequest.new(:title => 'Lorem ipsum ' * 17)
-      info_request.valid?
-      expect(info_request.errors[:title]).
-        to include("Please keep the summary short, like in the subject of an " \
-                   "email. You can use a phrase, rather than a full sentence.")
-    end
-
-    it 'rejects a summary which is less than 3 chars long' do
-      info_request = InfoRequest.new(:title => 'Re')
-      info_request.valid?
-      expect(info_request.errors[:title]).
-        to include('Summary is too short. Please be a little more ' \
-                   'descriptive about the information you are asking for.')
-    end
-
-    it 'rejects a summary that just says "FOI requests"' do
-      info_request = InfoRequest.new(:title => 'FOI requests')
-      info_request.valid?
-      expect(info_request.errors[:title]).
-        to include("Please describe more what the request is about in the " \
-                   "subject. There is no need to say it is an FOI request, " \
-                   "we add that on anyway.")
-    end
-
-    it 'rejects a summary that just says "Freedom of Information request"' do
-      info_request = InfoRequest.new(:title => 'Freedom of Information request')
-      info_request.valid?
-      expect(info_request.errors[:title]).
-        to include("Please describe more what the request is about in the " \
-                   "subject. There is no need to say it is an FOI request, " \
-                   "we add that on anyway.")
-    end
-
-    it 'rejects a summary which is not a mix of upper and lower case' do
-      info_request = InfoRequest.new(:title => 'lorem ipsum')
-      info_request.valid?
-      expect(info_request.errors[:title]).
-        to include("Please write the summary using a mixture of capital and " \
-                   "lower case letters. This makes it easier for others to read.")
-    end
-
-    it 'rejects short summaries which are not a mix of upper and lower case' do
-      info_request = InfoRequest.new(:title => 'test')
-      info_request.valid?
-      expect(info_request.errors[:title]).
-        to include("Please write the summary using a mixture of capital and " \
-                   "lower case letters. This makes it easier for others to read.")
-    end
-
     it 'requires a public body by default' do
       info_request = InfoRequest.new
       info_request.valid?
@@ -1720,7 +1669,6 @@ describe InfoRequest do
       info_request.valid?
       expect(info_request.errors[:prominence]).to include("is not included in the list")
     end
-
   end
 
   describe 'when generating a user name slug' do
@@ -2334,7 +2282,7 @@ describe InfoRequest do
   describe "when using a plugin and calculating the status" do
 
     before do
-      InfoRequest.send(:require, File.expand_path(File.dirname(__FILE__) + '/customstates'))
+      InfoRequest.send(:require, 'models/customstates')
       InfoRequest.send(:include, InfoRequestCustomStates)
       InfoRequest.class_eval('@@custom_states_loaded = true')
       @ir = info_requests(:naughty_chicken_request)
@@ -4022,7 +3970,7 @@ describe InfoRequest do
 
 end
 
-describe InfoRequest do
+RSpec.describe InfoRequest do
 
   describe '#date_initial_request_last_sent_at' do
     let(:info_request) { FactoryBot.create(:info_request) }
@@ -4828,6 +4776,37 @@ describe InfoRequest do
     context 'the request is waiting classification' do
       before { info_request.awaiting_description = true }
       it { is_expected.to eq(false) }
+    end
+  end
+
+  describe '#latest_refusals' do
+    subject { info_request.latest_refusals }
+
+    context 'when there are no incoming messages' do
+      let(:info_request) { FactoryBot.build(:info_request) }
+      it { is_expected.to be_an(Array) }
+      it { is_expected.to be_empty }
+    end
+
+    context 'when there are no refusals' do
+      let(:info_request) { FactoryBot.build(:info_request, :with_incoming) }
+      it { is_expected.to be_an(Array) }
+      it { is_expected.to be_empty }
+    end
+
+    context 'when there are refusals' do
+      let(:info_request) { FactoryBot.build(:info_request) }
+      let(:reference) { double(:reference) }
+
+      before do
+        message_1 = double(:incoming_message, refusals?: true, refusals: [reference])
+        message_2 = double(:incoming_message, refusals?: false)
+        allow(info_request).to receive(:incoming_messages).and_return(
+          [message_1, message_2]
+        )
+      end
+
+      it { is_expected.to eq([reference]) }
     end
   end
 end

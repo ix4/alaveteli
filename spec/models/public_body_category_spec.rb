@@ -1,17 +1,20 @@
-# -*- encoding : utf-8 -*-
 # == Schema Information
+# Schema version: 20210114161442
 #
 # Table name: public_body_categories
 #
-#  id           :integer          not null, primary key
-#  category_tag :text             not null
-#  created_at   :datetime
-#  updated_at   :datetime
+#  id                      :integer          not null, primary key
+#  category_tag            :text             not null
+#  created_at              :datetime
+#  updated_at              :datetime
+#  public_body_category_id :integer          not null
+#  title                   :text
+#  description             :text
 #
 
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require 'spec_helper'
 
-describe PublicBodyCategory do
+RSpec.describe PublicBodyCategory do
 
   context 'when validating' do
 
@@ -157,7 +160,7 @@ describe PublicBodyCategory do
 
 end
 
-describe PublicBodyCategory::Translation do
+RSpec.describe PublicBodyCategory::Translation do
 
   it 'requires a locale' do
     translation = PublicBodyCategory::Translation.new

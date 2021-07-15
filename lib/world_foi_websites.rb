@@ -1,4 +1,3 @@
-# -*- encoding : utf-8 -*-
 class WorldFOIWebsites
   EU_COUNTRIES = { 'BE' => 'Belgium',
                    'BG' => 'Bulgaria',
@@ -11,7 +10,6 @@ class WorldFOIWebsites
                    'ES' => 'Spain',
                    'FR' => 'France',
                    'HR' => 'Croatia',
-                   'IT' => 'Italy',
                    'CY' => 'Cyprus',
                    'LV' => 'Latvia',
                    'LT' => 'Lithuania',
@@ -103,10 +101,6 @@ class WorldFOIWebsites
         :country_name => 'Rwanda',
         :country_iso_code => 'RW',
         :url => "https://sobanukirwa.rw/" },
-      { :name => 'Chiedi',
-        :country_name => 'Italia',
-        :country_iso_code => 'IT',
-        :url => "https://chiedi.dirittodisapere.it/" },
       { :name => 'AccessInfo.hk',
         :country_name => '香港',
         :country_iso_code => 'HK',

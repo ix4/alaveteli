@@ -1,4 +1,3 @@
-# -*- encoding : utf-8 -*-
 # config/routes.rb:
 # Mapping URLs to controllers for FOIFA.
 #
@@ -41,6 +40,9 @@ Rails.application.routes.draw do
   match '/search(/*combined)' => 'general#search',
         :as => :search_general,
         :via => :get
+  match '/search/:query/users' => 'general#search',
+        as: :search_users,
+        via: :get
   match '/advancedsearch' => 'general#search_redirect',
         :as => :advanced_search,
         :advanced => true,

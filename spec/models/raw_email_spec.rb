@@ -1,5 +1,5 @@
-# -*- encoding : utf-8 -*-
 # == Schema Information
+# Schema version: 20210114161442
 #
 # Table name: raw_emails
 #
@@ -8,9 +8,9 @@
 #  updated_at :datetime
 #
 
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require 'spec_helper'
 
-describe RawEmail do
+RSpec.describe RawEmail do
 
   def roundtrip_data(raw_email, data)
     raw_email.data = data
